@@ -9,5 +9,5 @@ spring:
       matching-strategy: ant_path_matcher
 server:
   port: 8079
-JWT:
-  key: hello
+Filter:
+  loginFilterEnable: false

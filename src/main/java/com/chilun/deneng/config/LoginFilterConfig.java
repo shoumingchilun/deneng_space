@@ -1,10 +1,12 @@
 package com.chilun.deneng.config;
 
 import com.chilun.deneng.filter.LoginFilter;
+import jakarta.annotation.Resource;
 import jakarta.servlet.*;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
 
@@ -14,6 +16,9 @@ import org.springframework.util.StringUtils;
  */
 @Configuration
 public class LoginFilterConfig {
+
+    @Resource
+    private Environment env;
 
     /**
      * 注册 过滤器 Filter
@@ -28,6 +33,8 @@ public class LoginFilterConfig {
         registration.setName("LoginFilter");
         //设置过滤器链执行顺序
         registration.setOrder(1);
+        //设置是否启用
+        registration.setEnabled(env.getProperty("Filter.loginFilterEnable", Boolean.class, false));
         return registration;
     }
 }
