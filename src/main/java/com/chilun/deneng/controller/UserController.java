@@ -177,11 +177,7 @@ public class UserController {
             changedUser.setPassword(user.getPassword());
             //开始修改
             boolean update = false;
-            try {
-                update = service.updateById(user);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            update = service.updateById(user);
             if (update) return new BaseResponse("更改成功", ResultCode.SUCCESS);
             return new BaseResponse("修改失败", ResultCode.FAILURE);
         } else {//无权限修改
@@ -255,12 +251,7 @@ public class UserController {
         }
 
         boolean update = false;
-        try {
-            update = service.updateById(user);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new BaseResponse("数据库错误", ResultCode.FAILURE);
-        }
+        update = service.updateById(user);
         if (update) return new BaseResponse("更改成功", ResultCode.SUCCESS);
         return new BaseResponse("更改失败", ResultCode.FAILURE);
     }
