@@ -147,7 +147,7 @@ public class UserController {
     public BaseResponse changePassword(@RequestBody User user,
                                        @CookieValue(name = "JWT", required = false) String jwt,
                                        @SessionAttribute(name = "user", required = false) User currentUser) {
-        if (jwt == null && currentUser == null) {
+        if ((jwt == null || jwt.equals("")) && currentUser == null) {
             return new BaseResponse("未登录", ResultCode.UN_AUTHOR);
         }
         //判断有无更改权限
@@ -182,6 +182,17 @@ public class UserController {
         } else {//无权限修改
             return new BaseResponse("非管理员或原用户", ResultCode.UN_AUTHOR);
         }
+    }
+
+    @PostMapping("/logOut")
+    public BaseResponse logOut(HttpSession session, HttpServletResponse response) {
+        //删除session
+        session.removeAttribute("user");
+        //覆盖cookie
+        Cookie cookie = new Cookie("JWT", "");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+        return new BaseResponse("登出成功",ResultCode.FAILURE);
     }
 
     @GetMapping
