@@ -138,7 +138,7 @@ public class UserController {
 
     @PostMapping("/quickLogin")
     public BaseResponse quickLogin(@CookieValue("JWT") String jwt) {
-        Claims claims = null;
+        Claims claims;
         try {
             claims = jwtUtil.parseJWT(jwt);
         } catch (Exception e) {
@@ -227,7 +227,7 @@ public class UserController {
                 hasRight = true;
             }
         } else {//JWT不为空，从JWT中获得信息
-            Claims claims = null;
+            Claims claims;
             try {
                 claims = jwtUtil.parseJWT(jwt);
             } catch (Exception e) {
