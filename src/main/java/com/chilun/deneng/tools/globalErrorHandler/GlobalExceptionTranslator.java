@@ -6,6 +6,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.sql.SQLException;
+
 @RestControllerAdvice
 public class GlobalExceptionTranslator {
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -16,8 +18,9 @@ public class GlobalExceptionTranslator {
     }
 
 
-    @ExceptionHandler(Exception.class)
-    public BaseResponse handleError(Exception exception) {
-        return new BaseResponse(exception.getMessage(), ResultCode.FAILURE);
+    @ExceptionHandler(java.sql.SQLException.class)
+    public BaseResponse handleError(SQLException exception) {
+        exception.printStackTrace();
+        return new BaseResponse("数据库错误", ResultCode.FAILURE);
     }
 }

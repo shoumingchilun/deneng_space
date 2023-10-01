@@ -59,29 +59,29 @@ public class TaskController {
     @PostMapping
     public BaseResponse addTask(@RequestBody Task task) {
         boolean save = service.save(task);
-        if (save) return new BaseResponse(null, ResultCode.SUCCESS);
-        return new BaseResponse(null, ResultCode.FAILURE);
+        if (save) return new BaseResponse("添加成功", ResultCode.SUCCESS);
+        return new BaseResponse("添加失败", ResultCode.FAILURE);
     }
 
     @PutMapping
     public BaseResponse updateTaskWithoutState(@RequestBody Task task) {
         boolean update = service.updateById(task);
-        if (update) return new BaseResponse(null, ResultCode.SUCCESS);
-        return new BaseResponse(null, ResultCode.FAILURE);
+        if (update) return new BaseResponse("修改成功", ResultCode.SUCCESS);
+        return new BaseResponse("修改失败", ResultCode.FAILURE);
     }
 
     //如果存在状态变更，则调用此方法
     @PutMapping("/withState")
     public BaseResponse updateTaskWithState(@RequestBody Task task) {
         boolean update = service.updateByIdWithState(task);
-        if (update) return new BaseResponse(null, ResultCode.SUCCESS);
-        return new BaseResponse(null, ResultCode.FAILURE);
+        if (update) return new BaseResponse("修改成功", ResultCode.SUCCESS);
+        return new BaseResponse("修改失败", ResultCode.FAILURE);
     }
 
     @DeleteMapping
     public BaseResponse deleteTask(@RequestParam int id) {
         boolean remove = service.removeById(id);
-        if (remove) return new BaseResponse(null, ResultCode.SUCCESS);
-        else return new BaseResponse(null, ResultCode.FAILURE);
+        if (remove) return new BaseResponse("删除成功", ResultCode.SUCCESS);
+        else return new BaseResponse("删除失败", ResultCode.FAILURE);
     }
 }

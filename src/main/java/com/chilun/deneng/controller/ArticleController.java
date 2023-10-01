@@ -30,12 +30,7 @@ public class ArticleController {
     @GetMapping
     public BaseResponse queryArticleById(@RequestParam int id) {
         Article article = null;
-        try {
-            article = service.getById(id);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new BaseResponse("数据库错误", ResultCode.FAILURE);
-        }
+        article = service.getById(id);
         if (article == null) {
             return new BaseResponse("记录不存在", ResultCode.FAILURE);
         }
@@ -45,26 +40,16 @@ public class ArticleController {
     @GetMapping("/all")
     public BaseResponse queryArticleAll() {
         List<Article> list = null;
-        try {
-            list = service.list();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new BaseResponse("数据库错误", ResultCode.FAILURE);
-        }
+        list = service.list();
         return new BaseResponse(JSON.toJSONString(list), ResultCode.SUCCESS);
     }
 
     @GetMapping("/{name}")
     public BaseResponse queryArticleByName(@PathVariable String name) {
         List<Article> article = null;
-        try {
-            QueryWrapper<Article> qw = new QueryWrapper<>();
-            qw.eq("name", name);
-            article = service.getBaseMapper().selectList(qw);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new BaseResponse("数据库错误", ResultCode.FAILURE);
-        }
+        QueryWrapper<Article> qw = new QueryWrapper<>();
+        qw.eq("name", name);
+        article = service.getBaseMapper().selectList(qw);
         return article.size() == 0 ?
                 new BaseResponse(null, ResultCode.SUCCESS) :
                 new BaseResponse(JSON.toJSONString(article.get(0)), ResultCode.SUCCESS);//name唯一，所以只有一个
@@ -72,34 +57,22 @@ public class ArticleController {
 
     @PostMapping
     public BaseResponse addArticle(@RequestBody Article article) {
-        try {
-            boolean save = service.save(article);
-            if (save) return new BaseResponse("添加成功", ResultCode.SUCCESS);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new BaseResponse( "数据库错误", ResultCode.FAILURE);
+        boolean save = service.save(article);
+        if (save) return new BaseResponse("添加成功", ResultCode.SUCCESS);
+        return new BaseResponse("添加失败", ResultCode.FAILURE);
     }
 
     @PutMapping
     public BaseResponse updateArticle(@RequestBody Article article) {
-        try {
-            boolean update = service.updateById(article);
-            if (update) return new BaseResponse("修改成功", ResultCode.SUCCESS);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new BaseResponse("数据库错误", ResultCode.FAILURE);
+        boolean update = service.updateById(article);
+        if (update) return new BaseResponse("修改成功", ResultCode.SUCCESS);
+        return new BaseResponse("修改失败", ResultCode.FAILURE);
     }
 
     @DeleteMapping
     public BaseResponse deleteArticle(@RequestParam int id) {
-        try {
-            boolean remove = service.removeById(id);
-            if (remove) return new BaseResponse("删除成功", ResultCode.SUCCESS);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new BaseResponse("数据库错误", ResultCode.FAILURE);
+        boolean remove = service.removeById(id);
+        if (remove) return new BaseResponse("删除成功", ResultCode.SUCCESS);
+        return new BaseResponse("删除失败", ResultCode.FAILURE);
     }
 }
