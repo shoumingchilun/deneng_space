@@ -140,6 +140,20 @@ public class UserController {
         }
     }
 
+    @PostMapping("/quickLogin")
+    public BaseResponse quickLogin(@CookieValue("JWT") String jwt) {
+        Claims claims = null;
+        try {
+            claims = jwtUtil.parseJWT(jwt);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new BaseResponse("JWT解析失败", ResultCode.FAILURE);
+        }
+        LinkedHashMap map = claims.get("user", LinkedHashMap.class);
+        map.remove("password");
+        return new BaseResponse(JSON.toJSONString(map), ResultCode.SUCCESS);
+    }
+
     @PutMapping("/changePassword")
     public BaseResponse changePassword(@RequestBody User user,
                                        @CookieValue(name = "JWT") String jwt,
