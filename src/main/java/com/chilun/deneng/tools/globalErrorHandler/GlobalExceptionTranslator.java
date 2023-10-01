@@ -15,6 +15,7 @@ public class GlobalExceptionTranslator {
         return new BaseResponse(message, ResultCode.PRAM_MISS);
     }
 
+
     @ExceptionHandler(Exception.class)
     public BaseResponse handleError(Exception exception) {
         return new BaseResponse(exception.getMessage(), ResultCode.FAILURE);

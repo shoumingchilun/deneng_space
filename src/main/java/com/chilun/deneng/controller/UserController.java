@@ -10,6 +10,7 @@ import com.chilun.deneng.tools.auth.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,66 +41,101 @@ public class UserController {
     @Autowired
     JwtUtil jwtUtil;
 
-    @PostMapping("/register")
-    public JwtResponse register(@RequestBody User user, HttpServletResponse response) {
+    @PostMapping("/register")//只需要password即可
+    public JwtResponse register(@RequestBody User user, HttpServletResponse response, HttpSession session) {
+        if (user.getPassword() == null || user.getPassword().equals("")) {//判断有无密码
+            JwtResponse jwtResponse = new JwtResponse();
+            jwtResponse.setCode(ResultCode.FAILURE);
+            jwtResponse.setMessage("缺少密码");
+            return jwtResponse;
+        }
+        //忽略其他值
+        user.setType(null);
+        user.setChecked(null);
+        user.setInfo(null);
+        user.setTaskForceId(null);
+        //密码加密
+        user.setPassword(String.valueOf(hashToPositiveInt(user.getPassword())));
+        //存入数据库
+        boolean save = false;
         try {
-            user.setPassword(String.valueOf(hashToPositiveInt(user.getPassword())));
-            boolean save = service.save(user);
-            if (save == true) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("user", user);
-                String Data = jwtUtil.createJWT(
-                        UUID.randomUUID().toString().replace("-", ""),
-                        "UserController.register",
-                        259200000,
-                        map);//过期时间为3天
-                JwtResponse jwtResponse = new JwtResponse();
-                jwtResponse.setJwtData(Data);
-                jwtResponse.setCode(ResultCode.SUCCESS);
-                jwtResponse.setMessage(String.valueOf(user.getId()));
-                // 创建一个 cookie对象
-                Cookie cookie = new Cookie("JWT", Data);
-                //将cookie对象加入response响应
-                response.addCookie(cookie);
-                return jwtResponse;
-            }
-        } catch (Exception ignored) {
+            save = service.save(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (!save) {//保存失败则返回“创建用户失败”
+            JwtResponse jwtResponse = new JwtResponse();
+            jwtResponse.setCode(ResultCode.FAILURE);
+            jwtResponse.setMessage("创建用户失败");
+            return jwtResponse;
+        }
+        //保存成功，开始生成JWT
+        String Data = null;
+        try {
+            Map<String, Object> map = new HashMap<>();
+            map.put("user", user);
+            Data = jwtUtil.createJWT(
+                    UUID.randomUUID().toString().replace("-", ""),
+                    "UserController.register",
+                    259200000,//过期时间为3天
+                    map);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         JwtResponse jwtResponse = new JwtResponse();
-        jwtResponse.setCode(ResultCode.FAILURE);
-        jwtResponse.setMessage("创建用户失败");
+        jwtResponse.setJwtData(Data);
+        jwtResponse.setCode(ResultCode.SUCCESS);
+        jwtResponse.setMessage(String.valueOf(user.getId()));
+        // 创建一个 cookie对象
+        Cookie cookie = new Cookie("JWT", Data);
+        //将cookie对象加入response响应
+        response.addCookie(cookie);
+        session.setAttribute("user", user);//存入session
         return jwtResponse;
     }
 
     @PostMapping("/login")
-    public JwtResponse login(@RequestBody User user, HttpServletResponse response) throws Exception {
+    public JwtResponse login(@RequestBody User user, HttpServletResponse response, HttpSession session) {
+        if (user.getId() == null || user.getPassword() == null) {//判断id和密码是否为空
+            JwtResponse jwtResponse = new JwtResponse();
+            jwtResponse.setCode(ResultCode.FAILURE);
+            jwtResponse.setMessage("请输入id或密码");
+            return jwtResponse;
+        }
+        //获得数据库中对应user1
         User user1 = service.getById(user.getId());
-        if (user1 == null) {
+        if (user1 == null) {//判断user1是否存在
             JwtResponse jwtResponse = new JwtResponse();
             jwtResponse.setCode(ResultCode.FAILURE);
             jwtResponse.setMessage("用户不存在");
             return jwtResponse;
         }
+        //判断密码
         if (hashToPositiveInt(user.getPassword()) == Integer.parseInt(user1.getPassword())) {
             //密码正确
-            Map<String, Object> map = new HashMap<>();
-            map.put("user", user1);
-            String Data = jwtUtil.createJWT(
-                    UUID.randomUUID().toString().replace("-", ""),
-                    "UserController.login",
-                    259200000,
-                    map);//过期时间为3天
+            String Data = null;//尝试生成JWT
+            try {
+                Map<String, Object> map = new HashMap<>();
+                map.put("user", user1);
+                Data = jwtUtil.createJWT(
+                        UUID.randomUUID().toString().replace("-", ""),
+                        "UserController.login",
+                        259200000,//过期时间为3天
+                        map);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             JwtResponse jwtResponse = new JwtResponse();
             jwtResponse.setJwtData(Data);
             jwtResponse.setCode(ResultCode.SUCCESS);
-            jwtResponse.setMessage("JWT");
+            jwtResponse.setMessage(JSON.toJSONString(user1));
             // 创建一个 cookie对象
             Cookie cookie = new Cookie("JWT", Data);
             //将cookie对象加入response响应
             response.addCookie(cookie);
+            session.setAttribute("user", user1);//存入session
             return jwtResponse;
-        } else {
-            System.out.println(hashToPositiveInt(user.getPassword()));
+        } else {//密码错误
             JwtResponse jwtResponse = new JwtResponse();
             jwtResponse.setCode(ResultCode.FAILURE);
             jwtResponse.setMessage("密码错误");
