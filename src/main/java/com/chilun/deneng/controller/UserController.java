@@ -144,20 +144,43 @@ public class UserController {
     }
 
     @PutMapping("/changePassword")
-    public BaseResponse changePassword(@RequestBody User user, @CookieValue("JWT") String jwt) {
-        try {
-            Claims claims = jwtUtil.parseJWT(jwt);
-            LinkedHashMap manager = claims.get("user", LinkedHashMap.class);
-            if (manager.get("type").equals(4) || manager.get("id").equals(user.getId())) {
-                user.setPassword(String.valueOf(hashToPositiveInt(user.getPassword())));
-                boolean update = service.updateById(user);
-                if (update) return new BaseResponse("更改成功", ResultCode.SUCCESS);
-                return new BaseResponse(null, ResultCode.FAILURE);
+    public BaseResponse changePassword(@RequestBody User user,
+                                       @CookieValue(name = "JWT", required = false) String jwt,
+                                       @SessionAttribute(name = "user", required = false) User currentUser) {
+        if (jwt == null && currentUser == null) {
+            return new BaseResponse("未登录", ResultCode.UN_AUTHOR);
+        }
+        //判断有无更改权限
+        boolean hasRight = false;
+        if (currentUser != null) {//session不为空，从session中获得信息
+            if (currentUser.getType() == 4 || currentUser.getId() == user.getId()) hasRight = true;
+        } else {//JWT不为空，从JWT中获得信息
+            Claims claims = null;
+            try {
+                claims = jwtUtil.parseJWT(jwt);
+            } catch (Exception e) {
+                return new BaseResponse("JWT解析失败", ResultCode.UN_AUTHOR);
             }
-            return new BaseResponse("非管理员/原用户，ID：" + manager.get("id"), ResultCode.UN_AUTHOR);
-
-        } catch (Exception ignored) {
-            return new BaseResponse(ignored.getMessage(), ResultCode.FAILURE);
+            LinkedHashMap currentUser1 = claims.get("user", LinkedHashMap.class);
+            if (currentUser1.get("type").equals(4) || currentUser1.get("id").equals(user.getId())) hasRight = true;
+        }
+        if (hasRight) {//有权限则进行修改
+            user.setPassword(String.valueOf(hashToPositiveInt(user.getPassword())));//密码加密
+            //忽略其他属性
+            User changedUser = new User();
+            changedUser.setId(user.getId());
+            changedUser.setPassword(user.getPassword());
+            //开始修改
+            boolean update = false;
+            try {
+                update = service.updateById(user);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (update) return new BaseResponse("更改成功", ResultCode.SUCCESS);
+            return new BaseResponse("修改失败", ResultCode.FAILURE);
+        } else {//无权限修改
+            return new BaseResponse("非管理员或原用户", ResultCode.UN_AUTHOR);
         }
     }
 
