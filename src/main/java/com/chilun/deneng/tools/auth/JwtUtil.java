@@ -1,9 +1,11 @@
 package com.chilun.deneng.tools.auth;
 
+import com.chilun.deneng.pojo.User;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
@@ -14,7 +16,7 @@ import java.util.UUID;
 /**
  * @auther 齿轮
  * @create 2023-07-07-9:15
- *
+ * <p>
  * 使用方式：
  * 一、注入信息：
  * createJWT(
@@ -24,30 +26,41 @@ import java.util.UUID;
  * map为公开存储的信息
  * )
  * 二、解析信息：
- *Claims claims = parseJWT(String JWT);
+ * Claims claims = parseJWT(String JWT);
  * claims.get(map中的key,value的class)来获得map属性
  * 三、过期处理：
  * 调用parseJWT(String JWT)时，如果JWT过期，会抛出ExpiredJwtException异常，可使用catch处理
  */
-@Configuration
+
 public class JwtUtil {
-    @Bean
-    public static JwtUtil createJWTUtil(){
-        return new JwtUtil();
+    private static JwtUtil jwtUtil;
+
+    public static JwtUtil createJWTUtil() {
+        if (jwtUtil == null) {
+            jwtUtil= new JwtUtil();
+            jwtUtil.setSecretKey("hello");
+        }
+        return jwtUtil;
     }
 
-    @Value("JWT.key")
-    private String secretKey = "hello";
+    private String secretKey;
 
     public static void main(String[] args) throws Exception {
-        JwtUtil jwtUtil = new JwtUtil();
-        Map<String,Object> map = new HashMap<>();
-        map.put("name","1");
-        map.put("age","ni");
-        String xmf = jwtUtil.createJWT(UUID.randomUUID().toString().replace("-", ""),
-                "xmf",
-                10000,
+        JwtUtil jwtUtil = JwtUtil.createJWTUtil();
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "1");
+        map.put("age", "ni");
+        User user = new User();
+        user.setId(1);
+        user.setPassword("123");
+        user.setType(4);
+        map.put("user", user);
+        String xmf = jwtUtil.createJWT(
+                UUID.randomUUID().toString().replace("-", ""),
+                "UserController.login",
+                259200000,//过期时间为3天
                 map);
+//        xmf = "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2OTY0MTMxOTgsInVzZXIiOnsiaWQiOjEsIm5hbWUiOiLnlKjmiLczIiwicGFzc3dvcmQiOiI5ODc1MjQyNDIiLCJ0eXBlIjowLCJpbmZvIjpudWxsLCJjaGVja2VkIjowLCJ0YXNrRm9yY2VJZCI6bnVsbH19.oXJPqeTENzHwTzaDgSN6fTkR5Mp9t7al8An5pUlQqVw";
         System.out.println(xmf);
         Claims claims = null;
         try {

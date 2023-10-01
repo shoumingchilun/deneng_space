@@ -63,15 +63,12 @@ public class generator {
                             builder
                                     .enableCapitalMode()
                                     .enableSkipView()
-                                    .addInclude("article","recycled_task","sendback_task","study_record","task","task_force","task_pool","task_user","user");
+                                    .addInclude("article", "recycled_task", "sendback_task", "study_record", "task", "task_force", "task_pool", "task_user", "user");
                             builder.entityBuilder()
-                                    .enableFileOverride()
                                     .enableLombok();
                             builder.controllerBuilder()
-                                    .enableFileOverride()
                                     .enableRestStyle();
-                            builder.serviceBuilder()
-                                    .enableFileOverride();
+                            builder.serviceBuilder();
                         }
                 )
                 .execute();

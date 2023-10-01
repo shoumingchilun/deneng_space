@@ -19,10 +19,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * <p>
@@ -38,8 +35,7 @@ public class UserController {
     @Autowired
     IUserService service;
 
-    @Autowired
-    JwtUtil jwtUtil;
+    JwtUtil jwtUtil = JwtUtil.createJWTUtil();
 
     @PostMapping("/register")//只需要password即可
     public JwtResponse register(@RequestBody User user, HttpServletResponse response, HttpSession session) {
@@ -148,12 +144,13 @@ public class UserController {
     public BaseResponse changePassword(@RequestBody User user,
                                        @CookieValue(name = "JWT") String jwt,
                                        @SessionAttribute(name = "user", required = false) User currentUser) {
+        System.out.println(jwt);
         //判断有无更改权限
         boolean hasRight = false;
         if (currentUser != null) {//session不为空，从session中获得信息
-            if (currentUser.getType() == 4 || currentUser.getId() == user.getId()) hasRight = true;
+            if (currentUser.getType() == 4 || Objects.equals(currentUser.getId(), user.getId())) hasRight = true;
         } else {//JWT不为空，从JWT中获得信息
-            Claims claims = null;
+            Claims claims;
             try {
                 claims = jwtUtil.parseJWT(jwt);
             } catch (Exception e) {
@@ -195,7 +192,7 @@ public class UserController {
 
     @GetMapping
     public BaseResponse queryUserById(@RequestParam int id) {
-        User user = null;
+        User user;
         try {
             user = service.getById(id);
         } catch (Exception e) {
@@ -225,7 +222,7 @@ public class UserController {
             if (currentUser.getType() == 4) {
                 hasRight = true;
                 hasManagerRight = true;
-            } else if (currentUser.getId() == user.getId()) {
+            } else if (Objects.equals(currentUser.getId(), user.getId())) {
                 hasRight = true;
             }
         } else {//JWT不为空，从JWT中获得信息
@@ -271,6 +268,7 @@ public class UserController {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
+        assert digest != null;
         byte[] hashBytes = digest.digest(input.getBytes(StandardCharsets.UTF_8));
 
         // 使用BigInteger将字节数组表示的哈希值转换为正整数
