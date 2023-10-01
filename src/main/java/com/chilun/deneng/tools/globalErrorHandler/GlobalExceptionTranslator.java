@@ -23,4 +23,10 @@ public class GlobalExceptionTranslator {
         exception.printStackTrace();
         return new BaseResponse("数据库错误", ResultCode.FAILURE);
     }
+
+    @ExceptionHandler(Exception.class)
+    public BaseResponse handleError(Exception exception) {
+        exception.printStackTrace();
+        return new BaseResponse(exception.getMessage(), ResultCode.FAILURE);
+    }
 }

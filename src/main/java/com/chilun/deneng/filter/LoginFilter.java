@@ -29,23 +29,27 @@ public class LoginFilter implements Filter {
             // 直接放行
             chain.doFilter(request, response);
         } else {
+            //判断session中有无user
+            boolean sessionIsValued = false;
+            if (((HttpServletRequest) request).getSession().getAttribute("user") != null) {
+                sessionIsValued = true;
+            }
             // 判断是否存在名为 "JWT" 的 Cookie
-            boolean isValued = false;
+            boolean JWTisValued = false;
             JwtUtil jwtUtil = JwtUtil.createJWTUtil();
             for (Cookie cookie : ((HttpServletRequest) request).getCookies()) {
                 if (cookie.getName().equals("JWT")) {
                     try {
                         System.out.println(cookie.getValue());
                         if (!jwtUtil.isExpiredJWT(jwtUtil.parseJWT(cookie.getValue()))) {//未过期，说明jwt有效，直接放行
-                            isValued = true;
+                            JWTisValued = true;
                             break;
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } catch (Exception ignored) {//过期或无效会报错，忽略
                     }
                 }
             }
-            if (isValued) {//通过则放行
+            if (JWTisValued || sessionIsValued) {//通过则放行
                 chain.doFilter(request, response);
             } else {//否则报错
                 response.getWriter().write("{\n" +

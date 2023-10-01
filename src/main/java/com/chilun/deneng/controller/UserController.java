@@ -54,11 +54,7 @@ public class UserController {
         user.setPassword(String.valueOf(hashToPositiveInt(user.getPassword())));
         //存入数据库
         boolean save = false;
-        try {
-            save = service.save(user);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        save = service.save(user);
         if (!save) {//保存失败则返回“创建用户失败”
             JwtResponse jwtResponse = new JwtResponse();
             jwtResponse.setCode(ResultCode.FAILURE);
@@ -75,7 +71,7 @@ public class UserController {
                     "UserController.register",
                     259200000,//过期时间为3天
                     map);
-        } catch (Exception e) {
+        } catch (Exception e) {//JWT生成失败不影响其他逻辑使用
             e.printStackTrace();
         }
         JwtResponse jwtResponse = new JwtResponse();
@@ -118,7 +114,7 @@ public class UserController {
                         "UserController.login",
                         259200000,//过期时间为3天
                         map);
-            } catch (Exception e) {
+            } catch (Exception e) {//JWT生成失败不影响其他逻辑使用
                 e.printStackTrace();
             }
             JwtResponse jwtResponse = new JwtResponse();
@@ -207,12 +203,7 @@ public class UserController {
     @GetMapping
     public BaseResponse queryUserById(@RequestParam int id) {
         User user;
-        try {
-            user = service.getById(id);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new BaseResponse("数据库错误", ResultCode.FAILURE);
-        }
+        user = service.getById(id);
         if (user == null) {
             return new BaseResponse("无该用户", ResultCode.FAILURE);
         }
