@@ -86,11 +86,11 @@ public class UserController {
         jwtResponse.setJwtData(Data);
         jwtResponse.setCode(ResultCode.SUCCESS);
         jwtResponse.setMessage(String.valueOf(user.getId()));
-        // 创建一个 cookie对象
+        //存入Cookie
         Cookie cookie = new Cookie("JWT", Data);
-        //将cookie对象加入response响应
         response.addCookie(cookie);
-        session.setAttribute("user", user);//存入session
+        //存入session
+        session.setAttribute("user", user);
         return jwtResponse;
     }
 
@@ -128,12 +128,13 @@ public class UserController {
             JwtResponse jwtResponse = new JwtResponse();
             jwtResponse.setJwtData(Data);
             jwtResponse.setCode(ResultCode.SUCCESS);
+            user1.setPassword("null");//忽略密码
             jwtResponse.setMessage(JSON.toJSONString(user1));
-            // 创建一个 cookie对象
+            //存入cookie
             Cookie cookie = new Cookie("JWT", Data);
-            //将cookie对象加入response响应
             response.addCookie(cookie);
-            session.setAttribute("user", user1);//存入session
+            //存入session
+            session.setAttribute("user", user1);
             return jwtResponse;
         } else {//密码错误
             JwtResponse jwtResponse = new JwtResponse();
@@ -145,11 +146,8 @@ public class UserController {
 
     @PutMapping("/changePassword")
     public BaseResponse changePassword(@RequestBody User user,
-                                       @CookieValue(name = "JWT", required = false) String jwt,
+                                       @CookieValue(name = "JWT") String jwt,
                                        @SessionAttribute(name = "user", required = false) User currentUser) {
-        if ((jwt == null || jwt.equals("")) && currentUser == null) {
-            return new BaseResponse("未登录", ResultCode.UN_AUTHOR);
-        }
         //判断有无更改权限
         boolean hasRight = false;
         if (currentUser != null) {//session不为空，从session中获得信息
@@ -192,12 +190,18 @@ public class UserController {
         Cookie cookie = new Cookie("JWT", "");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
-        return new BaseResponse("登出成功",ResultCode.FAILURE);
+        return new BaseResponse("登出成功", ResultCode.FAILURE);
     }
 
     @GetMapping
     public BaseResponse queryUserById(@RequestParam int id) {
-        User user = service.getById(id);
+        User user = null;
+        try {
+            user = service.getById(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new BaseResponse("数据库错误", ResultCode.FAILURE);
+        }
         if (user == null) {
             return new BaseResponse("无该用户", ResultCode.FAILURE);
         }
@@ -207,11 +211,56 @@ public class UserController {
     }
 
     @PutMapping
-    public BaseResponse updateUserById(@RequestBody User user) {
-        user.setPassword(null);
-        boolean update = service.updateById(user);
-        if (update) return new BaseResponse(null, ResultCode.SUCCESS);
-        return new BaseResponse(null, ResultCode.FAILURE);
+    public BaseResponse updateUserById(@RequestBody User user,
+                                       @CookieValue(name = "JWT") String jwt,
+                                       @SessionAttribute(name = "user", required = false) User currentUser) {
+        //检查被更新对象id
+        if (user.getId() == null) {
+            return new BaseResponse("id为空", ResultCode.FAILURE);
+        }
+        //判断有无更改权限、有无设置为管理员权限
+        boolean hasRight = false;
+        boolean hasManagerRight = false;
+        if (currentUser != null) {//session不为空，从session中获得信息
+            if (currentUser.getType() == 4) {
+                hasRight = true;
+                hasManagerRight = true;
+            } else if (currentUser.getId() == user.getId()) {
+                hasRight = true;
+            }
+        } else {//JWT不为空，从JWT中获得信息
+            Claims claims = null;
+            try {
+                claims = jwtUtil.parseJWT(jwt);
+            } catch (Exception e) {
+                return new BaseResponse("JWT解析失败", ResultCode.UN_AUTHOR);
+            }
+            LinkedHashMap currentUser1 = claims.get("user", LinkedHashMap.class);
+            if (currentUser1.get("type").equals(4)) {
+                hasRight = true;
+                hasManagerRight = true;
+            } else if (currentUser1.get("id").equals(user.getId())) {
+                hasRight = true;
+            }
+        }
+        if (!hasRight) {
+            return new BaseResponse("无权修改他人记录", ResultCode.UN_AUTHOR);
+        }
+        //有权限，开始更改
+        user.setPassword(null);        //忽略密码
+        if (user.getType() == 4 && !hasManagerRight) {//检查是否设置为管理员
+            return new BaseResponse("无权设置为管理员", ResultCode.FAILURE);
+        }
+
+        boolean update = false;
+        try {
+            update = service.updateById(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new BaseResponse("数据库错误", ResultCode.FAILURE);
+        }
+        if (update) return new BaseResponse("更改成功", ResultCode.SUCCESS);
+        return new BaseResponse("更改失败", ResultCode.FAILURE);
     }
 
     private static int hashToPositiveInt(String input) {
