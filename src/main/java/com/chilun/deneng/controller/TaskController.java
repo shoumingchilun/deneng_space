@@ -6,8 +6,10 @@ import com.chilun.deneng.Response.BaseResponse;
 import com.chilun.deneng.Response.ResultCode;
 import com.chilun.deneng.pojo.Article;
 import com.chilun.deneng.pojo.Task;
+import com.chilun.deneng.pojo.User;
 import com.chilun.deneng.service.IArticleService;
 import com.chilun.deneng.service.ITaskService;
+import com.chilun.deneng.tools.auth.AuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +29,8 @@ public class TaskController {
     //增删改查
     @Autowired
     ITaskService service;
+    @Autowired
+    AuthUtil authUtil;
 
     @GetMapping
     public BaseResponse queryTaskById(@RequestParam int id) {
@@ -57,7 +61,10 @@ public class TaskController {
     }
 
     @PostMapping
-    public BaseResponse addTask(@RequestBody Task task) {
+    public BaseResponse addTask(@RequestBody Task task,
+                                @SessionAttribute(name = "user", required = false) User user,
+                                @CookieValue(name = "JWT", required = false) String jwt) {
+        if (!authUtil.isManager(user, jwt)) return new BaseResponse("非管理员", ResultCode.UN_AUTHOR);
         boolean save = service.save(task);
         if (save) return new BaseResponse("添加成功", ResultCode.SUCCESS);
         return new BaseResponse("添加失败", ResultCode.FAILURE);
@@ -79,7 +86,10 @@ public class TaskController {
     }
 
     @DeleteMapping
-    public BaseResponse deleteTask(@RequestParam int id) {
+    public BaseResponse deleteTask(@RequestParam int id,
+                                   @SessionAttribute(name = "user", required = false) User user,
+                                   @CookieValue(name = "JWT", required = false) String jwt) {
+        if (!authUtil.isManager(user, jwt)) return new BaseResponse("非管理员", ResultCode.UN_AUTHOR);
         boolean remove = service.removeById(id);
         if (remove) return new BaseResponse("删除成功", ResultCode.SUCCESS);
         else return new BaseResponse("删除失败", ResultCode.FAILURE);

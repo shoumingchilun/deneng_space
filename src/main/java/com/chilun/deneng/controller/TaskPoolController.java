@@ -6,8 +6,10 @@ import com.chilun.deneng.Response.BaseResponse;
 import com.chilun.deneng.Response.ResultCode;
 import com.chilun.deneng.pojo.TaskForce;
 import com.chilun.deneng.pojo.TaskPool;
+import com.chilun.deneng.pojo.User;
 import com.chilun.deneng.service.ITaskForceService;
 import com.chilun.deneng.service.ITaskPoolService;
+import com.chilun.deneng.tools.auth.AuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +29,9 @@ public class TaskPoolController {
     //增删改查
     @Autowired
     ITaskPoolService service;
+
+    @Autowired
+    AuthUtil authUtil;
 
     @GetMapping
     public BaseResponse queryTaskPoolById(@RequestParam int id) {
@@ -62,21 +67,30 @@ public class TaskPoolController {
     }
 
     @PostMapping
-    public BaseResponse addTaskPool(@RequestBody TaskPool taskPool) {
+    public BaseResponse addTaskPool(@RequestBody TaskPool taskPool,
+                                    @SessionAttribute(name = "user", required = false) User user,
+                                    @CookieValue(name = "JWT", required = false) String jwt) {
+        if (!authUtil.isManager(user, jwt)) return new BaseResponse("非管理员", ResultCode.UN_AUTHOR);
         boolean save = service.save(taskPool);
         if (save) return new BaseResponse(null, ResultCode.SUCCESS);
         return new BaseResponse(null, ResultCode.FAILURE);
     }
 
     @PutMapping
-    public BaseResponse updateTaskPool(@RequestBody TaskPool taskPool) {
+    public BaseResponse updateTaskPool(@RequestBody TaskPool taskPool,
+                                       @SessionAttribute(name = "user", required = false) User user,
+                                       @CookieValue(name = "JWT", required = false) String jwt) {
+        if (!authUtil.isManager(user, jwt)) return new BaseResponse("非管理员", ResultCode.UN_AUTHOR);
         boolean update = service.updateById(taskPool);
         if (update) return new BaseResponse(null, ResultCode.SUCCESS);
         return new BaseResponse(null, ResultCode.FAILURE);
     }
 
     @DeleteMapping
-    public BaseResponse deleteTaskPool(@RequestParam int id) {
+    public BaseResponse deleteTaskPool(@RequestParam int id,
+                                       @SessionAttribute(name = "user", required = false) User user,
+                                       @CookieValue(name = "JWT", required = false) String jwt) {
+        if (!authUtil.isManager(user, jwt)) return new BaseResponse("非管理员", ResultCode.UN_AUTHOR);
         boolean remove = service.removeById(id);
         if (remove) return new BaseResponse(null, ResultCode.SUCCESS);
         else return new BaseResponse(null, ResultCode.FAILURE);
