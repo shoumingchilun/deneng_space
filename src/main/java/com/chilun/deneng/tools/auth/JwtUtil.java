@@ -38,7 +38,7 @@ public class JwtUtil {
     public static JwtUtil createJWTUtil() {
         if (jwtUtil == null) {
             jwtUtil= new JwtUtil();
-            jwtUtil.setSecretKey("hello");
+            jwtUtil.setSecretKey("nihao");
         }
         return jwtUtil;
     }
@@ -60,7 +60,7 @@ public class JwtUtil {
                 "UserController.login",
                 259200000,//过期时间为3天
                 map);
-//        xmf = "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2OTY0MTMxOTgsInVzZXIiOnsiaWQiOjEsIm5hbWUiOiLnlKjmiLczIiwicGFzc3dvcmQiOiI5ODc1MjQyNDIiLCJ0eXBlIjowLCJpbmZvIjpudWxsLCJjaGVja2VkIjowLCJ0YXNrRm9yY2VJZCI6bnVsbH19.oXJPqeTENzHwTzaDgSN6fTkR5Mp9t7al8An5pUlQqVw";
+        xmf = "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2OTY0OTM3OTQsInVzZXIiOnsiaWQiOjEsIm5hbWUiOiLnlKjmiLczIiwicGFzc3dvcmQiOiI5ODc1MjQyNDIiLCJ0eXBlIjowLCJpbmZvIjpudWxsLCJjaGVja2VkIjowLCJ0YXNrRm9yY2VJZCI6bnVsbH19.7si52qFfcDCvnwWa6XaNhStGbiSVFpXcSY92PPxj52U";
         System.out.println(xmf);
         Claims claims = null;
         try {

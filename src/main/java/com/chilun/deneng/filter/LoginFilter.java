@@ -4,6 +4,8 @@ import com.chilun.deneng.tools.auth.JwtUtil;
 import jakarta.servlet.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
@@ -11,7 +13,12 @@ import java.io.IOException;
  * @auther 齿轮
  * @create 2023-10-01-16:43
  */
+
+@Component
 public class LoginFilter implements Filter {
+
+    @Autowired
+    JwtUtil jwtUtil;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -36,7 +43,6 @@ public class LoginFilter implements Filter {
             }
             // 判断是否存在名为 "JWT" 的 Cookie
             boolean JWTisValued = false;
-            JwtUtil jwtUtil = JwtUtil.createJWTUtil();
             for (Cookie cookie : ((HttpServletRequest) request).getCookies()) {
                 if (cookie.getName().equals("JWT")) {
                     try {

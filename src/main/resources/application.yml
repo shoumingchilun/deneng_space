@@ -13,3 +13,5 @@ server:
   port: 8079
 Filter:
   loginFilterEnable: true
+JWT:
+  key: nihao

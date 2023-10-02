@@ -35,7 +35,8 @@ public class UserController {
     @Autowired
     IUserService service;
 
-    JwtUtil jwtUtil = JwtUtil.createJWTUtil();
+    @Autowired
+    JwtUtil jwtUtil;
 
     @PostMapping("/register")//只需要password即可
     public JwtResponse register(@RequestBody User user, HttpServletResponse response, HttpSession session) {

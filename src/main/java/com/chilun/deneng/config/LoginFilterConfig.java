@@ -3,6 +3,7 @@ package com.chilun.deneng.config;
 import com.chilun.deneng.filter.LoginFilter;
 import jakarta.annotation.Resource;
 import jakarta.servlet.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,9 @@ public class LoginFilterConfig {
     @Resource
     private Environment env;
 
+    @Autowired
+    LoginFilter loginFilter;
+
     /**
      * 注册 过滤器 Filter
      */
@@ -27,7 +31,7 @@ public class LoginFilterConfig {
     public FilterRegistrationBean<Filter> LoginFilterConfigRegistration() {
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
         registration.setDispatcherTypes(DispatcherType.REQUEST);
-        registration.setFilter(new LoginFilter());
+        registration.setFilter(loginFilter);
         registration.addUrlPatterns("/*"); // 设置过滤器要拦截的路径，这里设置为拦截所有路径
         //设置名称
         registration.setName("LoginFilter");
