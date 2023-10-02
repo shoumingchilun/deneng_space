@@ -7,6 +7,7 @@ import com.chilun.deneng.Response.ResultCode;
 import com.chilun.deneng.pojo.User;
 import com.chilun.deneng.service.IUserService;
 import com.chilun.deneng.tools.auth.JwtUtil;
+import com.chilun.deneng.tools.constant.UserConstant;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -159,7 +160,7 @@ public class UserController {
         //判断有无更改权限
         boolean hasRight = false;
         if (currentUser != null) {//session不为空，从session中获得信息
-            if (currentUser.getType() == 4 || Objects.equals(currentUser.getId(), user.getId())) hasRight = true;
+            if (currentUser.getType() == UserConstant.MANAGER_USER_TYPE || Objects.equals(currentUser.getId(), user.getId())) hasRight = true;
         } else {//JWT不为空，从JWT中获得信息
             Claims claims;
             try {
@@ -168,7 +169,7 @@ public class UserController {
                 return new BaseResponse("JWT解析失败", ResultCode.UN_AUTHOR);
             }
             LinkedHashMap currentUser1 = claims.get("user", LinkedHashMap.class);
-            if (currentUser1.get("type").equals(4) || currentUser1.get("id").equals(user.getId())) hasRight = true;
+            if (currentUser1.get("type").equals(UserConstant.MANAGER_USER_TYPE) || currentUser1.get("id").equals(user.getId())) hasRight = true;
         }
         if (hasRight) {//有权限则进行修改
             user.setPassword(String.valueOf(hashToPositiveInt(user.getPassword())));//密码加密
@@ -221,7 +222,7 @@ public class UserController {
         boolean hasRight = false;
         boolean hasManagerRight = false;
         if (currentUser != null) {//session不为空，从session中获得信息
-            if (currentUser.getType() == 4) {
+            if (currentUser.getType() == UserConstant.MANAGER_USER_TYPE) {
                 hasRight = true;
                 hasManagerRight = true;
             } else if (Objects.equals(currentUser.getId(), user.getId())) {
@@ -235,7 +236,7 @@ public class UserController {
                 return new BaseResponse("JWT解析失败", ResultCode.UN_AUTHOR);
             }
             LinkedHashMap currentUser1 = claims.get("user", LinkedHashMap.class);
-            if (currentUser1.get("type").equals(4)) {
+            if (currentUser1.get("type").equals(UserConstant.MANAGER_USER_TYPE)) {
                 hasRight = true;
                 hasManagerRight = true;
             } else if (currentUser1.get("id").equals(user.getId())) {
@@ -247,7 +248,7 @@ public class UserController {
         }
         //有权限，开始更改
         user.setPassword(null);        //忽略密码
-        if (user.getType() == 4 && !hasManagerRight) {//检查是否设置为管理员
+        if (user.getType() == UserConstant.MANAGER_USER_TYPE && !hasManagerRight) {//检查是否设置为管理员
             return new BaseResponse("无权设置为管理员", ResultCode.FAILURE);
         }
 
