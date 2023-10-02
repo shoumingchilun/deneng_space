@@ -7,6 +7,7 @@ import com.chilun.deneng.Response.ResultCode;
 import com.chilun.deneng.pojo.Article;
 import com.chilun.deneng.pojo.User;
 import com.chilun.deneng.service.IArticleService;
+import com.chilun.deneng.tools.auth.AuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,9 @@ public class ArticleController {
     //增删改查
     @Autowired
     IArticleService service;
+
+    @Autowired
+    AuthUtil authUtil;
 
     @GetMapping
     public BaseResponse queryArticleById(@RequestParam int id) {
@@ -56,21 +60,30 @@ public class ArticleController {
     }
 
     @PostMapping
-    public BaseResponse addArticle(@RequestBody Article article) {
+    public BaseResponse addArticle(@RequestBody Article article,
+                                   @SessionAttribute(name = "user", required = false) User user,
+                                   @CookieValue(name = "JWT", required = false) String jwt) {
+        if (!authUtil.isManager(user, jwt)) return new BaseResponse("非管理员", ResultCode.UN_AUTHOR);
         boolean save = service.save(article);
         if (save) return new BaseResponse("添加成功", ResultCode.SUCCESS);
         return new BaseResponse("添加失败", ResultCode.FAILURE);
     }
 
     @PutMapping
-    public BaseResponse updateArticle(@RequestBody Article article) {
+    public BaseResponse updateArticle(@RequestBody Article article,
+                                      @SessionAttribute(name = "user", required = false) User user,
+                                      @CookieValue(name = "JWT", required = false) String jwt) {
+        if (!authUtil.isManager(user, jwt)) return new BaseResponse("非管理员", ResultCode.UN_AUTHOR);
         boolean update = service.updateById(article);
         if (update) return new BaseResponse("修改成功", ResultCode.SUCCESS);
         return new BaseResponse("修改失败", ResultCode.FAILURE);
     }
 
     @DeleteMapping
-    public BaseResponse deleteArticle(@RequestParam int id) {
+    public BaseResponse deleteArticle(@RequestParam int id,
+                                      @SessionAttribute(name = "user", required = false) User user,
+                                      @CookieValue(name = "JWT", required = false) String jwt) {
+        if (!authUtil.isManager(user, jwt)) return new BaseResponse("非管理员", ResultCode.UN_AUTHOR);
         boolean remove = service.removeById(id);
         if (remove) return new BaseResponse("删除成功", ResultCode.SUCCESS);
         return new BaseResponse("删除失败", ResultCode.FAILURE);
