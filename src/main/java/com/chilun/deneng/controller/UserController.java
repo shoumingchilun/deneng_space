@@ -1,11 +1,13 @@
 package com.chilun.deneng.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.chilun.deneng.Response.BaseResponse;
 import com.chilun.deneng.Response.JwtResponse;
 import com.chilun.deneng.Response.ResultCode;
 import com.chilun.deneng.pojo.User;
 import com.chilun.deneng.service.IUserService;
+import com.chilun.deneng.tools.auth.AuthUtil;
 import com.chilun.deneng.tools.auth.JwtUtil;
 import com.chilun.deneng.tools.constant.UserConstant;
 import io.jsonwebtoken.Claims;
@@ -35,6 +37,9 @@ import java.util.*;
 public class UserController {
     @Autowired
     IUserService service;
+
+    @Autowired
+    AuthUtil authUtil;
 
     @Autowired
     JwtUtil jwtUtil;
@@ -160,7 +165,8 @@ public class UserController {
         //判断有无更改权限
         boolean hasRight = false;
         if (currentUser != null) {//session不为空，从session中获得信息
-            if (currentUser.getType() == UserConstant.MANAGER_USER_TYPE || Objects.equals(currentUser.getId(), user.getId())) hasRight = true;
+            if (currentUser.getType() == UserConstant.MANAGER_USER_TYPE || Objects.equals(currentUser.getId(), user.getId()))
+                hasRight = true;
         } else {//JWT不为空，从JWT中获得信息
             Claims claims;
             try {
@@ -169,7 +175,8 @@ public class UserController {
                 return new BaseResponse("JWT解析失败", ResultCode.UN_AUTHOR);
             }
             LinkedHashMap currentUser1 = claims.get("user", LinkedHashMap.class);
-            if (currentUser1.get("type").equals(UserConstant.MANAGER_USER_TYPE) || currentUser1.get("id").equals(user.getId())) hasRight = true;
+            if (currentUser1.get("type").equals(UserConstant.MANAGER_USER_TYPE) || currentUser1.get("id").equals(user.getId()))
+                hasRight = true;
         }
         if (hasRight) {//有权限则进行修改
             user.setPassword(String.valueOf(hashToPositiveInt(user.getPassword())));//密码加密
@@ -199,7 +206,13 @@ public class UserController {
     }
 
     @GetMapping
-    public BaseResponse queryUserById(@RequestParam int id) {
+    public BaseResponse queryUserById(@RequestParam(required = false) Integer id,
+                                      @SessionAttribute(name = "user", required = false) User user1,
+                                      @CookieValue(name = "JWT", required = false) String jwt) {
+        if (id == null&& authUtil.isManager(user1,jwt)) {
+            List<User> users = service.getBaseMapper().selectList(new QueryWrapper<>());
+            return new BaseResponse(JSON.toJSONString(users), ResultCode.SUCCESS);
+        }
         User user;
         user = service.getById(id);
         if (user == null) {
