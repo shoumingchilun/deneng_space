@@ -44,22 +44,18 @@ public class LoginFilter implements Filter {
             boolean JWTisValued = false;
             if (!sessionIsValued) {//session通过了就不看JWT了
                 // 判断是否存在名为 "JWT" 的 Cookie
-                String cookieHeader = ((HttpServletRequest) request).getHeader("cookie");
-                Cookie[] cookies = new Cookie[0];
-                try {
-                    cookies = ((HttpServletRequest) request).getCookies();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("JWT")) {
-                        try {
-                            System.out.println(cookie.getValue());
-                            if (!jwtUtil.isExpiredJWT(jwtUtil.parseJWT(cookie.getValue()))) {//未过期，说明jwt有效，直接放行
-                                JWTisValued = true;
-                                break;
+                Cookie[] cookies = ((HttpServletRequest) request).getCookies();
+                if(cookies!=null){
+                    for (Cookie cookie : cookies) {
+                        if (cookie.getName().equals("JWT")) {
+                            try {
+                                System.out.println(cookie.getValue());
+                                if (!jwtUtil.isExpiredJWT(jwtUtil.parseJWT(cookie.getValue()))) {//未过期，说明jwt有效，直接放行
+                                    JWTisValued = true;
+                                    break;
+                                }
+                            } catch (Exception ignored) {//过期或无效会报错，忽略
                             }
-                        } catch (Exception ignored) {//过期或无效会报错，忽略
                         }
                     }
                 }
