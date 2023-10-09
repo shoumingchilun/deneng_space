@@ -43,6 +43,7 @@ public class LoginFilter implements Filter {
             }
             // 判断是否存在名为 "JWT" 的 Cookie
             boolean JWTisValued = false;
+            String cookieHeader  = ((HttpServletRequest) request).getHeader("cookie");
             Cookie[] cookies = ((HttpServletRequest) request).getCookies();
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals("JWT")) {
