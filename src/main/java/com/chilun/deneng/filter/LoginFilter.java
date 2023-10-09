@@ -43,7 +43,8 @@ public class LoginFilter implements Filter {
             }
             // 判断是否存在名为 "JWT" 的 Cookie
             boolean JWTisValued = false;
-            for (Cookie cookie : ((HttpServletRequest) request).getCookies()) {
+            Cookie[] cookies = ((HttpServletRequest) request).getCookies();
+            for (Cookie cookie : cookies) {
                 if (cookie.getName().equals("JWT")) {
                     try {
                         System.out.println(cookie.getValue());
@@ -61,7 +62,7 @@ public class LoginFilter implements Filter {
                 response.getWriter().write("{\n" +
                         "    \"message\": \"Not Logged in!\",\n" +
                         "    \"code\": \"UN_AUTHOR\",\n" +
-                        "    \"success\": true\n" +
+                        "    \"success\": false\n" +
                         "}");
                 response.setContentType("text/plain");
             }
