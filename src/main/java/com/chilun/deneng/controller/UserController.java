@@ -202,7 +202,7 @@ public class UserController {
         Cookie cookie = new Cookie("JWT", "");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
-        return new BaseResponse("登出成功", ResultCode.FAILURE);
+        return new BaseResponse("登出成功", ResultCode.SUCCESS);
     }
 
     @GetMapping
