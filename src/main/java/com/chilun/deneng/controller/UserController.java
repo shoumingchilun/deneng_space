@@ -298,6 +298,21 @@ public class UserController {
         return new BaseResponse("更改失败", ResultCode.FAILURE);
     }
 
+    @DeleteMapping
+    public BaseResponse deleteUserByID(@RequestParam(required = false) Integer id,
+                                       @SessionAttribute(name = "user", required = false) User user1,
+                                       @CookieValue(name = "JWT", required = false) String jwt){
+        if (!authUtil.isManager(user1,jwt)) {
+            return new BaseResponse("非管理员", ResultCode.UN_AUTHOR);
+        }
+        boolean b = service.removeById(id);
+        if(b){
+            return new BaseResponse("删除成功", ResultCode.SUCCESS);
+        }else{
+            return new BaseResponse(null, ResultCode.FAILURE);
+        }
+    }
+
     private static int hashToPositiveInt(String input) {
 
         MessageDigest digest = null;

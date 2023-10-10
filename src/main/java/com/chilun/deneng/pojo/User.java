@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -38,4 +40,8 @@ public class User implements Serializable {
     private Integer checked;
 
     private Integer taskForceId;
+
+    @TableLogic
+    @TableField("`isDelete`")
+    private Integer isDelete;
 }
