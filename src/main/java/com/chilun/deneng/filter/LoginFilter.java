@@ -58,6 +58,8 @@ public class LoginFilter implements Filter {
                             }
                         }
                     }
+                }else {
+                    System.out.println("cookie is null");
                 }
             }
             if (JWTisValued || sessionIsValued) {//通过则放行
