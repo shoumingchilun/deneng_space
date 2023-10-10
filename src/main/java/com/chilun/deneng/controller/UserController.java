@@ -236,6 +236,19 @@ public class UserController {
         users.forEach(user -> user.setPassword(null));
         return new BaseResponse(JSON.toJSONString(users), ResultCode.SUCCESS);
     }
+    @GetMapping("type")
+    public BaseResponse queryUserByType(@RequestParam(required = false) Integer type,
+                                           @SessionAttribute(name = "user", required = false) User user1,
+                                           @CookieValue(name = "JWT", required = false) String jwt) {
+        if (!authUtil.isManager(user1,jwt)) {
+            return new BaseResponse("非管理员", ResultCode.UN_AUTHOR);
+        }
+        QueryWrapper<User> qw = new QueryWrapper<>();
+        qw.eq("type",type);
+        List<User> users = service.getBaseMapper().selectList(qw);
+        users.forEach(user -> user.setPassword(null));
+        return new BaseResponse(JSON.toJSONString(users), ResultCode.SUCCESS);
+    }
 
     @PutMapping
     public BaseResponse updateUserById(@RequestBody User user,
