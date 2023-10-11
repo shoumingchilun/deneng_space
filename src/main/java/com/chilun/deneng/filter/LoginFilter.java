@@ -29,9 +29,9 @@ public class LoginFilter implements Filter {
         // 获取请求路径
         String requestURI = ((HttpServletRequest) request).getRequestURI();
         // 判断请求路径是否为"/user/login"或"/user/register"
-        if ("/user/login".equals(requestURI) ||
-                "/user/register".equals(requestURI) ||
-                "/user/logOut".equals(requestURI) ||
+        if ("/api/user/login".equals(requestURI) ||
+                "/api/user/register".equals(requestURI) ||
+                "/api/user/logOut".equals(requestURI) ||
                 "/index".equals(requestURI)) {
             // 直接放行
             chain.doFilter(request, response);
